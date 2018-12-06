@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">warc</a> &gt; <a href="index.source.html" class="el_package">crawl.warc</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package crawl.warc;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.elasticsearch.spark.rdd.api.java.JavaEsSpark;
+/**
+ * 
+ * This works JavaRDD&lt;Map&lt;String, String&gt;&gt; to save 
+ * JAVARDD&lt;JSONOBJECT&gt;
+ * 
+ *
+ */
+<span class="nc" id="L20">public class App {</span>
+
+	public static void main(String[] args) {
+<span class="nc" id="L23">		final SparkConf conf = new SparkConf().setAppName(&quot;test&quot;);</span>
+<span class="nc" id="L24">		conf.set(&quot;es.index.auto.create&quot;, &quot;true&quot;);</span>
+<span class="nc" id="L25">		conf.set(&quot;es.nodes&quot;, &quot;internal-sandbox-elb-es-02-240508465.us-west-2.elb.amazonaws.com&quot;);</span>
+<span class="nc" id="L26">		conf.set(&quot;es.port&quot;, &quot;9200&quot;);</span>
+<span class="nc" id="L27">		final JavaSparkContext sc = new JavaSparkContext(conf);</span>
+
+<span class="nc" id="L29">		JavaRDD&lt;String&gt; lines = sc.textFile(args[0]);</span>
+<span class="nc" id="L30">		JavaRDD&lt;String&gt; linesFilter = lines.filter(new Function&lt;String, Boolean&gt;() {</span>
+
+			@Override
+			public Boolean call(String val) throws Exception {
+				// TODO Auto-generated method stub
+<span class="nc bnc" id="L35" title="All 2 branches missed.">				if (StringUtils.isBlank(val)) {</span>
+<span class="nc" id="L36">					return false;</span>
+				} else {
+<span class="nc" id="L38">					return true;</span>
+				}
+			}
+		});
+<span class="nc" id="L42">		JavaRDD&lt;Map&lt;String, String&gt;&gt; li = linesFilter.map(new Function&lt;String, Map&lt;String, String&gt;&gt;() {</span>
+
+			@Override
+			public Map&lt;String, String&gt; call(String mapvalues) throws Exception {
+				// TODO Auto-generated method stub
+<span class="nc" id="L47">					Map&lt;String, String&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L48">					map.put(&quot;hadoop&quot; + new Random().nextInt(10) , mapvalues);</span>
+<span class="nc" id="L49">					return map;</span>
+					
+				
+			}
+
+			
+		});
+<span class="nc" id="L56">		linesFilter.saveAsTextFile(args[2]);</span>
+
+<span class="nc" id="L58">		lines.saveAsTextFile(args[3]);</span>
+		/*JavaPairRDD&lt;String, String&gt; linesPair= lines.mapToPair(new PairFunction&lt;String, String, String&gt;() {
+
+			@Override
+			public Tuple2&lt;String, String&gt; call(String value) throws Exception {
+				// TODO Auto-generated method stub
+				return new Tuple2&lt;String, String&gt;(new Random().nextInt(10) + &quot;hadoop&quot;, value);
+			}
+		});*/
+		
+		
+		
+		/*Map&lt;String, String&gt; numbers = new HashMap&lt;&gt;();
+		numbers.put(&quot;1&quot;, &quot;test&quot;);
+		Map&lt;String, String&gt; airports = new HashMap&lt;&gt;();
+		airports.put(&quot;OTP&quot;, &quot;Otopeni&quot; );
+		airports.put(&quot;SFO&quot;, &quot;San Fran&quot;);
+		
+		List list = new ArrayList&lt;&gt;();
+		list.add(numbers);
+		list.add(airports);
+		JavaRDD&lt;Map&lt;String, String&gt;&gt; javaRDD = sc.parallelize(list);*/
+
+		
+<span class="nc" id="L82">		li.saveAsTextFile(args[1]);</span>
+<span class="nc" id="L83">		JavaEsSpark.saveToEs(li, &quot;spark1/docs&quot;); </span>
+		
+		//JavaEsSpark.saveToEs(lines, &quot;sparktest/docs&quot;);
+		//sc.close();
+<span class="nc" id="L87">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
